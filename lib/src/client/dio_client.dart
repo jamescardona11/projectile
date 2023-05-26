@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dio/dio.dart' hide Headers;
 import 'package:projectile/src/core/client/i_projectile_client.dart';
@@ -23,7 +24,7 @@ class DioClient extends IProjectileClient {
 
   @override
   Future<ProjectileResult> createRequest(ProjectileRequest request) async {
-    final dataToRequest = request.isMultipart ? await _createFromMap(request) : request.body;
+    final dataToRequest = request.isMultipart ? await _createFromMap(request) : _refactorFromMap(request);
 
     try {
       final response = await dioClient.request(
@@ -104,5 +105,14 @@ class DioClient extends IProjectileClient {
         ..addAll(request.body)
         ..addAll({request.multipart!.field: multipart}),
     );
+  }
+
+  dynamic _refactorFromMap(ProjectileRequest request) async {
+    if ((request.headers![contentTypeKeyOne] as String?)?.toLowerCase() == applicationKey ||
+        (request.headers![contentTypeKeyTwo] as String?)?.toLowerCase() == applicationKey) {
+      return jsonEncode(request.body);
+    }
+
+    return request.body;
   }
 }
