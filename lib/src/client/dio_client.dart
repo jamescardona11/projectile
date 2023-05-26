@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:dio/dio.dart' hide Headers;
 import 'package:projectile/src/core/client/i_projectile_client.dart';
+import 'package:projectile/src/core/interceptors/interceptor_contract.dart';
+import 'package:projectile/src/core/misc_models/config.dart';
 import 'package:projectile/src/core/request_models/multipart_file.dart';
 import 'package:projectile/src/core/request_models/request.dart';
-import 'package:projectile/src/core/result_models/failure.dart';
 import 'package:projectile/src/core/result_models/result.dart';
-import 'package:projectile/src/core/result_models/success.dart';
 
 /// {@template dio_client}
 /// {@endtemplate}
@@ -15,14 +15,15 @@ class DioClient extends IProjectileClient {
 
   DioClient({
     Dio? dio,
-  }) {
+    BaseConfig? newConfig,
+    List<ProjectileInterceptor> listInterceptors = const [],
+  }) : super(newConfig: newConfig, listInterceptors: listInterceptors) {
     dioClient = dio ?? Dio();
   }
 
   @override
   Future<ProjectileResult> createRequest(ProjectileRequest request) async {
-    final dataToRequest =
-        request.isMultipart ? await _createFromMap(request) : request.data;
+    final dataToRequest = request.isMultipart ? await _createFromMap(request) : request.data;
 
     try {
       final response = await dioClient.request(
@@ -31,9 +32,8 @@ class DioClient extends IProjectileClient {
         data: dataToRequest,
       );
 
-      if (isSuccessRequest(response.statusCode) &&
-          request.customSuccess(response.data)) {
-        return SuccessResult.def(
+      if (isSuccessRequest(response.statusCode) && request.customSuccess(response.data)) {
+        return ProjectileResult.success(
           statusCode: response.statusCode,
           headers: response.headers.map,
           data: response.data,
@@ -41,7 +41,7 @@ class DioClient extends IProjectileClient {
           originalRequest: request,
         );
       } else {
-        return FailureResult.def(
+        return ProjectileResult.err(
           originalRequest: request,
           error: response.data,
           statusCode: response.statusCode,
@@ -49,7 +49,7 @@ class DioClient extends IProjectileClient {
         );
       }
     } catch (err, stackTrace) {
-      return FailureResult.def(
+      return ProjectileResult.err(
         originalRequest: request,
         error: err,
         stackTrace: stackTrace,
@@ -108,10 +108,10 @@ class DioClient extends IProjectileClient {
     );
   }
 
-  ResponseType _fromResponseType(ProjectileRequest request) {
-    if (request.responseType.isJson) return ResponseType.json;
-    if (request.responseType.isBytes) return ResponseType.bytes;
+  ResponseType? _fromResponseType(ProjectileRequest request) {
+    if (request.responseType?.isJson == true) return ResponseType.json;
+    if (request.responseType?.isBytes == true) return ResponseType.bytes;
 
-    return ResponseType.plain;
+    return null;
   }
 }

@@ -3,7 +3,7 @@ import 'dart:async';
 import '../interceptors/interceptors.dart';
 import '../misc_models/config.dart';
 import '../request_models/request_models.dart';
-import '../result_models/result_models.dart';
+import '../result_models/result.dart';
 
 /// {@template i_projectile_client}
 /// {@endtemplate}
@@ -15,32 +15,27 @@ abstract class IClient<T> {
     Completer<T> completer,
   );
 
-  Future<dynamic> createNativeMultipartObject(
-      MultipartFileWrapper multipartFileWrapper);
+  Future<dynamic> createNativeMultipartObject(MultipartFileWrapper multipartFileWrapper);
 
   void finallyBlock();
 }
 
-abstract class IProjectileClient extends IClient<ProjectileResult>
-    with RunInterceptor {
-  BaseConfig _config = const BaseConfig();
+abstract class IProjectileClient extends IClient<ProjectileResult> with RunInterceptor {
+  late BaseConfig _config;
   final List<ProjectileInterceptor> _listInterceptors = [];
 
-  IProjectileClient() {
-    // if (config.enableLog) {
-    //   addAllInterceptors([BasicProjectileLogs(config.logsTag)]);
-    // }
+  IProjectileClient({BaseConfig? newConfig, List<ProjectileInterceptor> listInterceptors = const []}) {
+    _config = newConfig ?? const BaseConfig();
+    _listInterceptors.addAll(listInterceptors);
+
+    addNewConfig(_config);
   }
 
   void addNewConfig(BaseConfig newConfig) {
     _config = newConfig;
     if (_config.enableLog) {
-      addAllInterceptors([BasicProjectileLogs(_config.logsTag)]);
+      _listInterceptors.add(BasicProjectileLogs(_config.logsTag));
     }
-  }
-
-  void addAllInterceptors(List<ProjectileInterceptor> interceptors) {
-    _listInterceptors.addAll(interceptors);
   }
 
   /// override this to implement request
@@ -77,12 +72,13 @@ abstract class IProjectileClient extends IClient<ProjectileResult>
       _runFromCreate(requestData, completer);
     } catch (error, stackTrace) {
       _responseError(
-          FailureResult.def(
-            originalRequest: request,
-            error: error,
-            stackTrace: stackTrace,
-          ),
-          completer);
+        ProjectileResult.err(
+          originalRequest: request,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+        completer,
+      );
     }
 
     return completer.future;
@@ -96,29 +92,27 @@ abstract class IProjectileClient extends IClient<ProjectileResult>
     final responseRequest = await createRequest(requestData);
 
     if (responseRequest.isSuccess) {
-      _responseSuccess(responseRequest as SuccessResult, completer);
+      _responseSuccess(responseRequest, completer);
     } else {
-      _responseError(responseRequest as FailureResult, completer);
+      _responseError(responseRequest, completer);
     }
   }
 
   /// Before start the request in `createRequest`
-  Future<ProjectileRequest> _beforeRequest(ProjectileRequest request) =>
-      runRequestInterceptors(_listInterceptors, request);
+  Future<ProjectileRequest> _beforeRequest(ProjectileRequest request) => runRequestInterceptors(_listInterceptors, request);
 
   /// Request success
   Future<void> _responseSuccess(
-    SuccessResult responseData,
+    ProjectileResult responseData,
     Completer<ProjectileResult> completer,
   ) async {
-    final response =
-        await runResponseInterceptors(_listInterceptors, responseData);
+    final response = await runResponseInterceptors(_listInterceptors, responseData);
     completer.complete(response);
   }
 
   /// Request error
   Future<void> _responseError(
-    FailureResult error,
+    ProjectileResult error,
     Completer<ProjectileResult> completer,
   ) async {
     final errorData = await runErrorInterceptors(_listInterceptors, error);

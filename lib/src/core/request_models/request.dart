@@ -15,7 +15,7 @@ class ProjectileRequest {
 
   final Method method;
   final ContentType contentType;
-  final PResponseType responseType;
+  final PResponseType? responseType;
   final bool isMultipart;
   final Map<String, dynamic> urlParams;
   final Map<String, dynamic> queries;
@@ -32,7 +32,7 @@ class ProjectileRequest {
     this.ignoreBaseUrl = false,
     this.multipart,
     this.contentType = ContentType.json,
-    this.responseType = PResponseType.json,
+    this.responseType,
     this.headers = const {},
     this.urlParams = const {},
     this.queries = const {},
@@ -62,8 +62,7 @@ class ProjectileRequest {
     return getUri(baseUrl).toString();
   }
 
-  String _addDynamicAddressParams(String tempUrl) =>
-      urlParams.entries.fold(tempUrl, (
+  String _addDynamicAddressParams(String tempUrl) => urlParams.entries.fold(tempUrl, (
         String previousUrl,
         MapEntry<String, dynamic> currentParam,
       ) {

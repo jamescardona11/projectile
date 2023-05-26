@@ -1,58 +1,107 @@
-import 'failure.dart';
-import 'success.dart';
+import 'dart:async';
+import 'dart:io';
 
-typedef Err<T, R> = R Function(T error);
-typedef Completion<T, R> = R Function(T success);
+import 'package:projectile/src/core/request_models/request.dart';
 
 /// {@template result}
 ///
 /// A value that represents either a success or a failure, including an
 /// associated value in each case.
 ///
-/// Result<ResponseError, ResponseSuccess>
-///
-/// inspired by https://github.com/epam-cross-platform-lab/dart_result_type
-///
 /// {@endtemplate}
-abstract class ProjectileResult {
+class ProjectileResult {
+  /// Request info.
+  final ProjectileRequest originalRequest;
+
+  /// The original error/exception object; It's usually not null when `type`
+  final dynamic error;
+  final StackTrace? stackTrace;
+  final ProjectileErrorType? type;
+
+  /// Response
+  final dynamic data;
+  final int? statusCode;
+  final Map<String, dynamic>? headers;
+
+  ProjectileResult._({
+    required this.originalRequest,
+    this.error,
+    this.data,
+    this.stackTrace,
+    this.headers,
+    this.statusCode,
+    this.type,
+  });
+
+  factory ProjectileResult.success({
+    required dynamic data,
+    required Map<String, dynamic> headers,
+    required ProjectileRequest originalRequest,
+    int? statusCode,
+  }) =>
+      ProjectileResult._(
+        headers: headers,
+        data: data,
+        originalRequest: originalRequest,
+        statusCode: statusCode,
+      );
+
+  factory ProjectileResult.err({
+    required dynamic error,
+    required ProjectileRequest originalRequest,
+    Map<String, dynamic> headers = const {},
+    int? statusCode,
+    StackTrace? stackTrace,
+  }) =>
+      ProjectileResult._(
+        headers: headers,
+        error: error,
+        originalRequest: originalRequest,
+        stackTrace: stackTrace,
+        statusCode: statusCode,
+        type: ProjectileErrorType.fromError(error),
+      );
+
   /// Returns true if [Result] is [Failure].
-  bool get isFailure => this is FailureResult;
+  bool get isFailure => error != null;
 
   /// Returns true if [Result] is [Success].
-  bool get isSuccess => this is SuccessResult;
+  bool get isSuccess => data != null;
 
-  /// Returns a new value of [Failure] result.
-  ///
-  FailureResult get failure {
-    if (isFailure) {
-      return (this as FailureResult);
+  String get message => (error?.toString() ?? '');
+
+  @override
+  String toString() {
+    var msg = 'FailureResult [$type]: $message ';
+    if (error is Error) {
+      msg += '\n${(error as Error).stackTrace}';
     }
-
-    throw Exception(
-      'Make sure that result [isFailure] before accessing [failure]',
-    );
+    if (stackTrace != null) {
+      msg += '\nSource stack:\n$stackTrace';
+    }
+    return msg;
   }
+}
 
-  /// Returns a new value of [Success] result.
-  SuccessResult get success {
-    if (isSuccess) {
-      return (this as SuccessResult);
+enum ProjectileErrorType {
+  connectTimeout,
+  socketError,
+
+  /// When the server response, but with a incorrect status, such as 404, 503...
+  response,
+
+  // unexpected error
+  other;
+
+  static ProjectileErrorType fromError(Object error) {
+    if (error is TimeoutException) {
+      return connectTimeout;
+    } else if (error is SocketException) {
+      return socketError;
+    } else if (error is Exception) {
+      return other;
     }
 
-    throw Exception(
-      'Make sure that result [isSuccess] before accessing [success]',
-    );
-  }
-
-  /// Returns a new value of [Result] from closure
-  R fold<R>(
-      Err<FailureResult, R> failure, Completion<SuccessResult, R> success) {
-    if (isSuccess) {
-      final right = this as SuccessResult;
-      return success(right);
-    } else {
-      final left = this as FailureResult;
-      return failure(left);
-    }
+    return response;
   }
 }

@@ -3,16 +3,17 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:projectile/src/core/client/i_projectile_client.dart';
+import 'package:projectile/src/core/interceptors/interceptors.dart';
+import 'package:projectile/src/core/misc_models/config.dart';
 import 'package:projectile/src/core/request_models/multipart_file.dart';
 import 'package:projectile/src/core/request_models/request.dart';
-import 'package:projectile/src/core/result_models/failure.dart';
 import 'package:projectile/src/core/result_models/result.dart';
-import 'package:projectile/src/core/result_models/success.dart';
 
 /// {@template http_client}
 /// {@endtemplate}
 class HttpClient extends IProjectileClient {
-  HttpClient();
+  HttpClient({BaseConfig? newConfig, List<ProjectileInterceptor> listInterceptors = const []})
+      : super(newConfig: newConfig, listInterceptors: listInterceptors);
 
   final http.Client _httpClient = http.Client();
 
@@ -29,27 +30,23 @@ class HttpClient extends IProjectileClient {
     }
 
     try {
-      final httpSendRequest =
-          await _httpClient.send(httpRequest).timeout(timeout);
+      final httpSendRequest = await _httpClient.send(httpRequest).timeout(timeout);
 
       final response = await http.Response.fromStream(httpSendRequest);
 
       dynamic data;
-      if (request.responseType.isJson && response.body.isNotEmpty) {
+      if (request.responseType?.isJson == true && response.body.isNotEmpty) {
         /// json
-
         data = jsonDecode(response.body);
-      } else if (request.responseType.isBytes) {
+      } else if (request.responseType?.isBytes == true) {
         /// bytes
         data = response.bodyBytes;
       } else {
-        /// plain
         data = response.body;
       }
 
-      if (isSuccessRequest(response.statusCode) &&
-          request.customSuccess(data)) {
-        return SuccessResult.def(
+      if (isSuccessRequest(response.statusCode) && request.customSuccess(data)) {
+        return ProjectileResult.success(
           statusCode: response.statusCode,
           headers: response.headers,
           data: data,
@@ -57,7 +54,7 @@ class HttpClient extends IProjectileClient {
           // originalData: response.body,
         );
       } else {
-        return FailureResult.def(
+        return ProjectileResult.err(
           originalRequest: request,
           error: data,
           statusCode: response.statusCode,
@@ -65,7 +62,7 @@ class HttpClient extends IProjectileClient {
         );
       }
     } catch (err, stackTrace) {
-      return FailureResult.def(
+      return ProjectileResult.err(
         originalRequest: request,
         error: err,
         stackTrace: stackTrace,
@@ -115,8 +112,7 @@ class HttpClient extends IProjectileClient {
 
     final httpRequest = http.Request(request.methodStr, uri)
       ..headers.addAll(_asMap(request.headers ?? {}))
-      ..bodyFields =
-          request.data.map((key, value) => MapEntry(key, value.toString()));
+      ..bodyFields = request.data.map((key, value) => MapEntry(key, value.toString()));
 
     return httpRequest;
   }
@@ -129,8 +125,7 @@ class HttpClient extends IProjectileClient {
 
     final httpRequest = http.MultipartRequest(request.methodStr, uri)
       ..headers.addAll(_asMap(request.headers ?? {}))
-      ..fields.addAll(
-          request.data.map((key, value) => MapEntry(key, value.toString())))
+      ..fields.addAll(request.data.map((key, value) => MapEntry(key, value.toString())))
       ..files.add(await createNativeMultipartObject(request.multipart!));
 
     return httpRequest;
