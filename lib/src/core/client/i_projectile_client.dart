@@ -47,8 +47,6 @@ abstract class IProjectileClient extends IClient<ProjectileResult> with RunInter
     ProjectileRequest request,
     Completer<ProjectileResult> completer,
   ) {
-    request.addDefaultHeaders(_config);
-
     String finalTarget = '';
     if (_config.isHttpClient) {
       finalTarget = request.getUri(_config.baseUrl).toString();
@@ -57,9 +55,24 @@ abstract class IProjectileClient extends IClient<ProjectileResult> with RunInter
     }
 
     return _sendRequest(
-      request.copyWith(target: finalTarget),
+      request.copyWith(
+        target: finalTarget,
+        headers: _getHeaders(
+          _config,
+          requestHeaders: request.headers,
+          contentType: request.contentType,
+        ),
+      ),
       completer,
     );
+  }
+
+  Map<String, dynamic> _getHeaders(BaseConfig config, {Map<String, dynamic>? requestHeaders, ContentType contentType = ContentType.json}) {
+    final headers = requestHeaders ?? config.baseHeaders ?? {};
+    if (headers.containsKey('content-type') || headers.containsKey('Content-Type')) headers;
+    headers.addAll({'content-type': contentType.value});
+
+    return headers;
   }
 
   /// Run request and everything relate to response and catch errors

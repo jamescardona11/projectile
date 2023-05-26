@@ -1,4 +1,3 @@
-import '../misc_models/misc_models.dart';
 import 'helper_types.dart';
 import 'method.dart';
 import 'multipart_file.dart';
@@ -38,10 +37,6 @@ class ProjectileRequest {
     this.body = const {},
     this.customSuccess = _defaultCustomSuccess,
   });
-
-  void addDefaultHeaders(BaseConfig config) {
-    headers ??= {'content-type': contentType.value}..addAll(config.baseHeaders ?? {});
-  }
 
   String get methodStr => isMultipart ? Method.POST.value : method.value;
 
