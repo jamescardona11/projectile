@@ -68,6 +68,26 @@ class ProjectileResult {
   /// Returns true if [Result] is [Success].
   bool get isSuccess => data != null;
 
+  Map<String, dynamic> get dataJson => data is Map<String, dynamic> ? data as Map<String, dynamic> : {};
+
+  List<int>? get dataBytes => data is List<int> ? data as List<int> : null;
+
+  String? get dataString => data is String ? data as String : null;
+
+  bool get isSuccessRequest =>
+      statusCode != null &&
+      ![
+        400, // Bad Request
+        401, // Unauthorized
+        402, // Payment Required
+        403, // Forbidden
+        404, // Not Found
+        405, // Method Not Allowed,
+        413, // Request Entity Too Large
+        414, // Request URI Too Long,
+        415, // Unsupported Media Type
+      ].contains(statusCode);
+
   String get message => (error?.toString() ?? '');
 
   @override

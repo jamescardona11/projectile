@@ -24,8 +24,8 @@ abstract class IProjectileClient extends IClient<ProjectileResult> with RunInter
   late BaseConfig _config;
   final List<ProjectileInterceptor> _listInterceptors = [];
 
-  IProjectileClient({BaseConfig? newConfig, List<ProjectileInterceptor> listInterceptors = const []}) {
-    _config = newConfig ?? const BaseConfig();
+  IProjectileClient({BaseConfig? config, List<ProjectileInterceptor> listInterceptors = const []}) {
+    _config = config ?? const BaseConfig();
     _listInterceptors.addAll(listInterceptors);
 
     addNewConfig(_config);

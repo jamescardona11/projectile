@@ -12,8 +12,8 @@ import 'package:projectile/src/core/result_models/result.dart';
 /// {@template http_client}
 /// {@endtemplate}
 class HttpClient extends IProjectileClient {
-  HttpClient({BaseConfig? newConfig, List<ProjectileInterceptor> listInterceptors = const []})
-      : super(newConfig: newConfig, listInterceptors: listInterceptors);
+  HttpClient({BaseConfig? config, List<ProjectileInterceptor> listInterceptors = const []})
+      : super(config: config, listInterceptors: listInterceptors);
 
   final http.Client _httpClient = http.Client();
 
@@ -35,10 +35,12 @@ class HttpClient extends IProjectileClient {
       final response = await http.Response.fromStream(httpSendRequest);
 
       dynamic data;
-      if (request.responseType?.isJson == true && response.body.isNotEmpty) {
+
+      final json = jsonDecode(response.body);
+      if (response.body.isNotEmpty && json != null) {
         /// json
-        data = jsonDecode(response.body);
-      } else if (request.responseType?.isBytes == true) {
+        data = json;
+      } else if (response.bodyBytes.isNotEmpty) {
         /// bytes
         data = response.bodyBytes;
       } else {
@@ -112,7 +114,7 @@ class HttpClient extends IProjectileClient {
 
     final httpRequest = http.Request(request.methodStr, uri)
       ..headers.addAll(_asMap(request.headers ?? {}))
-      ..bodyFields = request.data.map((key, value) => MapEntry(key, value.toString()));
+      ..bodyFields = request.body.map((key, value) => MapEntry(key, value.toString()));
 
     return httpRequest;
   }
@@ -125,7 +127,7 @@ class HttpClient extends IProjectileClient {
 
     final httpRequest = http.MultipartRequest(request.methodStr, uri)
       ..headers.addAll(_asMap(request.headers ?? {}))
-      ..fields.addAll(request.data.map((key, value) => MapEntry(key, value.toString())))
+      ..fields.addAll(request.body.map((key, value) => MapEntry(key, value.toString())))
       ..files.add(await createNativeMultipartObject(request.multipart!));
 
     return httpRequest;

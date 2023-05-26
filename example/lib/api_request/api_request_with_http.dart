@@ -1,15 +1,15 @@
-import 'package:projectile/projectile.dart';
 import 'package:example/api_request/reqres_urls.dart';
 import 'package:example/model/user_model.dart';
+import 'package:projectile/projectile.dart';
 
 class ApiRequestWithHttp {
   Future<bool> login(String email, password) async {
-    final response = await Projectile(config: BaseConfig(enableLog: true, baseUrl: ReqresUrls.base))
+    final response = await Projectile(client: DioClient(config: BaseConfig(enableLog: true, baseUrl: ReqresUrls.base)))
         .request(
           ProjectileRequest(
             target: ReqresUrls.loginUrl2,
             method: Method.POST,
-            data: {
+            body: {
               "email": email,
               "password": password,
             },
@@ -17,22 +17,19 @@ class ApiRequestWithHttp {
         )
         .fire();
 
-    return response.fold(
-      (_) => false,
-      (s) => true,
-    );
+    return response.isFailure;
   }
 
   Future<UserModel?> getUserInfo(int id) async {
     final response =
         await Projectile().request(RequestBuilder.target(ReqresUrls.singleUserUrl).mode(Method.GET).urlParams({'id': id}).build()).fire();
 
-    return response.fold((error) {
+    if (response.isFailure) {
       return null;
-    }, (success) {
-      final user = UserModel.fromJson(success.data['data']);
+    } else {
+      final user = UserModel.fromJson(response.data['data']);
       return user;
-    });
+    }
   }
 
   Future<void> testPut() async {
@@ -41,7 +38,7 @@ class ApiRequestWithHttp {
           ProjectileRequest(
             method: Method.PUT,
             target: ReqresUrls.testUrl,
-            data: {
+            body: {
               "name": "morpheus",
               "job": "leader",
             },

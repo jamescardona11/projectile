@@ -10,17 +10,3 @@ enum ContentType {
 
   String get value => _value;
 }
-
-// based in DIO
-enum PResponseType {
-  json,
-
-  /// Get original bytes, the type of [ResponseSuccess.data] will be List<int>
-  bytes,
-
-  unknown;
-
-  bool get isJson => this == json;
-
-  bool get isBytes => this == bytes;
-}

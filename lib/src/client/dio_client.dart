@@ -15,15 +15,15 @@ class DioClient extends IProjectileClient {
 
   DioClient({
     Dio? dio,
-    BaseConfig? newConfig,
+    BaseConfig? config,
     List<ProjectileInterceptor> listInterceptors = const [],
-  }) : super(newConfig: newConfig, listInterceptors: listInterceptors) {
+  }) : super(config: config, listInterceptors: listInterceptors) {
     dioClient = dio ?? Dio();
   }
 
   @override
   Future<ProjectileResult> createRequest(ProjectileRequest request) async {
-    final dataToRequest = request.isMultipart ? await _createFromMap(request) : request.data;
+    final dataToRequest = request.isMultipart ? await _createFromMap(request) : request.body;
 
     try {
       final response = await dioClient.request(
@@ -94,8 +94,6 @@ class DioClient extends IProjectileClient {
   Options getOptions(ProjectileRequest request) => Options(
         method: request.methodStr,
         headers: request.headers ?? {},
-        contentType: request.contentType.value,
-        responseType: _fromResponseType(request),
       );
 
   Future<FormData> _createFromMap(ProjectileRequest request) async {
@@ -103,15 +101,8 @@ class DioClient extends IProjectileClient {
 
     return FormData.fromMap(
       <String, dynamic>{}
-        ..addAll(request.data)
+        ..addAll(request.body)
         ..addAll({request.multipart!.field: multipart}),
     );
-  }
-
-  ResponseType? _fromResponseType(ProjectileRequest request) {
-    if (request.responseType?.isJson == true) return ResponseType.json;
-    if (request.responseType?.isBytes == true) return ResponseType.bytes;
-
-    return null;
   }
 }

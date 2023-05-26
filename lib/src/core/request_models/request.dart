@@ -15,11 +15,11 @@ class ProjectileRequest {
 
   final Method method;
   final ContentType contentType;
-  final PResponseType? responseType;
+
   final bool isMultipart;
   final Map<String, dynamic> urlParams;
   final Map<String, dynamic> queries;
-  final Map<String, dynamic> data;
+  final Map<String, dynamic> body;
   final MultipartFileWrapper? multipart;
   Map<String, dynamic>? headers;
 
@@ -32,16 +32,15 @@ class ProjectileRequest {
     this.ignoreBaseUrl = false,
     this.multipart,
     this.contentType = ContentType.json,
-    this.responseType,
     this.headers = const {},
     this.urlParams = const {},
     this.queries = const {},
-    this.data = const {},
+    this.body = const {},
     this.customSuccess = _defaultCustomSuccess,
   });
 
   void addDefaultHeaders(BaseConfig config) {
-    headers ??= {'content-type': contentType}..addAll(config.baseHeaders ?? {});
+    headers ??= {'content-type': contentType.value}..addAll(config.baseHeaders ?? {});
   }
 
   String get methodStr => isMultipart ? Method.POST.value : method.value;
@@ -73,19 +72,18 @@ class ProjectileRequest {
 
   @override
   String toString() =>
-      'ProjectileRequest(\ntarget: $target, ignoreBaseUrl: $ignoreBaseUrl, method: ${method.value},\n ContentType: ${contentType.value}, responseType: ${responseType.toString()}, headers: ${headers.toString()},\nurlParams: $urlParams, queries: $queries, data: $data,\nisMultipart: $isMultipart, multipart: ${multipart?.toString()}';
+      'ProjectileRequest(\ntarget: $target, ignoreBaseUrl: $ignoreBaseUrl, method: ${method.value},\n ContentType: ${contentType.value}, headers: ${headers.toString()},\nurlParams: $urlParams, queries: $queries, body: $body,\nisMultipart: $isMultipart, multipart: ${multipart?.toString()}';
 
   ProjectileRequest copyWith({
     String? target,
     bool? ignoreBaseUrl,
     Method? method,
     ContentType? contentType,
-    PResponseType? responseType,
     Map<String, dynamic>? headers,
     bool? isMultipart,
     Map<String, dynamic>? urlParams,
     Map<String, dynamic>? queries,
-    Map<String, dynamic>? data,
+    Map<String, dynamic>? body,
     MultipartFileWrapper? multipart,
     ValueGetterRequest? customSuccess,
   }) {
@@ -94,12 +92,11 @@ class ProjectileRequest {
       ignoreBaseUrl: ignoreBaseUrl ?? this.ignoreBaseUrl,
       method: method ?? this.method,
       contentType: contentType ?? this.contentType,
-      responseType: responseType ?? this.responseType,
       headers: headers ?? this.headers ?? const {},
       isMultipart: isMultipart ?? this.isMultipart,
       urlParams: urlParams ?? this.urlParams,
       queries: queries ?? this.queries,
-      data: data ?? this.data,
+      body: body ?? this.body,
       multipart: multipart ?? this.multipart,
       customSuccess: customSuccess ?? this.customSuccess,
     );

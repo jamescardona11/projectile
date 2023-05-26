@@ -1,5 +1,5 @@
-import 'package:projectile/projectile.dart';
 import 'package:example/api_request/reqres_urls.dart';
+import 'package:projectile/projectile.dart';
 
 import '../model/user_model.dart';
 
@@ -11,7 +11,11 @@ class ApiRequestWithDio {
         )
         .fire();
 
-    return result.fold((error) => [], (success) => (success.dataJson['data'] as List<dynamic>).map((e) => UserModel.fromJson(e)));
+    if (result.isFailure) {
+      return [];
+    } else {
+      return (result.dataJson['data'] as List<dynamic>).map((e) => UserModel.fromJson(e));
+    }
   }
 
   Future<void> testPut() async {
@@ -20,7 +24,7 @@ class ApiRequestWithDio {
           ProjectileRequest(
             method: Method.PUT,
             target: ReqresUrls.testUrl,
-            data: {
+            body: {
               "name": "morpheus",
               "job": "leader",
             },
@@ -66,7 +70,7 @@ class ApiRequestWithDio {
           ProjectileRequest(
             method: Method.POST,
             target: ReqresUrls.testPostUrl,
-            data: {
+            body: {
               "name": "morpheus",
               "job": "leader",
             },

@@ -10,26 +10,15 @@ class RequestBuilder {
   late final bool _ignoreBaseUrl;
   Method? _method;
   ContentType? _contentType;
-  PResponseType? _responseType;
 
-  // final Headers _mHeaders = Headers.empty();
   final Map<String, dynamic> _mHeaders = {};
   final Map<String, dynamic> _mParams = {};
   final Map<String, dynamic> _mQueries = {};
-  final Map<String, dynamic> _mData = {};
+  final Map<String, dynamic> _mBody = {};
 
   MultipartFileWrapper? _multipart;
 
-  // ResponseListener mListener;
-
   RequestBuilder.target(this._target, [this._ignoreBaseUrl = false]);
-
-  RequestBuilder extra({
-    PResponseType responseType = PResponseType.json,
-  }) {
-    _responseType = responseType;
-    return this;
-  }
 
   RequestBuilder mode(
     Method method, [
@@ -50,15 +39,6 @@ class RequestBuilder {
     return this;
   }
 
-  // RequestBuilder defaultHeaders() {
-  //   Map<String, String> headers = {
-  //     'accept': 'application/json',
-  //   };
-
-  //   _mHeaders.addAll(headers);
-  //   return this;
-  // }
-
   RequestBuilder urlParams(Map<String, dynamic> params) {
     _mParams.addAll(params);
     return this;
@@ -69,8 +49,8 @@ class RequestBuilder {
     return this;
   }
 
-  RequestBuilder data(Map<String, dynamic> data) {
-    _mData.addAll(data);
+  RequestBuilder body(Map<String, dynamic> body) {
+    _mBody.addAll(body);
     return this;
   }
 
@@ -83,14 +63,13 @@ class RequestBuilder {
       target: _target,
       method: _method!,
       contentType: _contentType ?? ContentType.json,
-      responseType: _responseType ?? PResponseType.json,
       ignoreBaseUrl: _ignoreBaseUrl,
       isMultipart: _multipart != null,
       multipart: _multipart,
       queries: _mQueries,
       headers: _mHeaders,
       urlParams: _mParams,
-      data: _mData,
+      body: _mBody,
     );
   }
 }
