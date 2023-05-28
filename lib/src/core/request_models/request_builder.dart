@@ -10,6 +10,7 @@ class RequestBuilder {
   late final bool _ignoreBaseUrl;
   Method? _method;
   ContentType? _contentType;
+  PResponseType? _responseType;
 
   final Map<String, dynamic> _mHeaders = {};
   final Map<String, dynamic> _mParams = {};
@@ -54,6 +55,11 @@ class RequestBuilder {
     return this;
   }
 
+  RequestBuilder extra(PResponseType responseType) {
+    _responseType = responseType;
+    return this;
+  }
+
   ProjectileRequest build() {
     if (_method == null) {
       throw Exception('Make sure that method is not null, call MODE method');
@@ -62,7 +68,8 @@ class RequestBuilder {
     return ProjectileRequest(
       target: _target,
       method: _method!,
-      contentType: _contentType ?? ContentType.json,
+      contentType: _contentType,
+      responseType: _responseType,
       ignoreBaseUrl: _ignoreBaseUrl,
       isMultipart: _multipart != null,
       multipart: _multipart,

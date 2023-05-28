@@ -92,6 +92,10 @@ class ProjectileResult {
 
   @override
   String toString() {
+    if (isSuccess) {
+      return 'SuccessResult(\nstatusCode: $statusCode, data: $data, headers: ${headers.toString()}\n)';
+    }
+
     var msg = 'FailureResult [$type]: $message ';
     if (error is Error) {
       msg += '\n${(error as Error).stackTrace}';

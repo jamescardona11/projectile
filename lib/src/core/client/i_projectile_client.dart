@@ -18,6 +18,8 @@ abstract class IClient<T> {
   Future<dynamic> createNativeMultipartObject(MultipartFileWrapper multipartFileWrapper);
 
   void finallyBlock();
+
+  bool get isHttpClient;
 }
 
 abstract class IProjectileClient extends IClient<ProjectileResult> with RunInterceptor {
@@ -48,7 +50,7 @@ abstract class IProjectileClient extends IClient<ProjectileResult> with RunInter
     Completer<ProjectileResult> completer,
   ) {
     String finalTarget = '';
-    if (_config.isHttpClient) {
+    if (isHttpClient) {
       finalTarget = request.getUri(_config.baseUrl).toString();
     } else {
       finalTarget = request.getUrl(_config.baseUrl);
@@ -67,10 +69,13 @@ abstract class IProjectileClient extends IClient<ProjectileResult> with RunInter
     );
   }
 
-  Map<String, dynamic> _getHeaders(BaseConfig config, {Map<String, dynamic>? requestHeaders, ContentType contentType = ContentType.json}) {
-    final headers = requestHeaders ?? config.baseHeaders ?? {};
+  Map<String, dynamic> _getHeaders(BaseConfig config, {Map<String, dynamic>? requestHeaders, ContentType? contentType}) {
+    final Map<String, dynamic> headers = Map.from(requestHeaders ?? config.baseHeaders ?? {});
     if (headers.containsKey(contentTypeKeyOne) || headers.containsKey(contentTypeKeyTwo)) headers;
-    headers.addAll({contentTypeKeyOne: contentType.value});
+
+    if (contentType != null) {
+      headers.addAll({contentTypeKeyOne: contentType.value});
+    }
 
     return headers;
   }

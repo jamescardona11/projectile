@@ -13,9 +13,11 @@ class ProjectileRequest {
   final bool ignoreBaseUrl;
 
   final Method method;
-  final ContentType contentType;
-
+  final ContentType? contentType;
+  final PResponseType? responseType;
   final bool isMultipart;
+
+  /// Replace all dynamic address params with the given values in target-url that have {}
   final Map<String, dynamic> urlParams;
   final Map<String, dynamic> queries;
   final Map<String, dynamic> body;
@@ -30,7 +32,8 @@ class ProjectileRequest {
     this.isMultipart = false,
     this.ignoreBaseUrl = false,
     this.multipart,
-    this.contentType = ContentType.json,
+    this.contentType,
+    this.responseType,
     this.headers = const {},
     this.urlParams = const {},
     this.queries = const {},
@@ -67,7 +70,7 @@ class ProjectileRequest {
 
   @override
   String toString() =>
-      'ProjectileRequest(\ntarget: $target, ignoreBaseUrl: $ignoreBaseUrl, method: ${method.value},\n ContentType: ${contentType.value}, headers: ${headers.toString()},\nurlParams: $urlParams, queries: $queries, body: $body,\nisMultipart: $isMultipart, multipart: ${multipart?.toString()}';
+      'ProjectileRequest(\ntarget: $target, ignoreBaseUrl: $ignoreBaseUrl, method: ${method.value},\n ContentType: ${contentType?.value}, headers: ${headers.toString()},\nurlParams: $urlParams, queries: $queries, body: $body,\nisMultipart: $isMultipart, multipart: ${multipart?.toString()}';
 
   ProjectileRequest copyWith({
     String? target,
@@ -76,6 +79,7 @@ class ProjectileRequest {
     ContentType? contentType,
     Map<String, dynamic>? headers,
     bool? isMultipart,
+    PResponseType? responseType,
     Map<String, dynamic>? urlParams,
     Map<String, dynamic>? queries,
     Map<String, dynamic>? body,
@@ -88,6 +92,7 @@ class ProjectileRequest {
       method: method ?? this.method,
       contentType: contentType ?? this.contentType,
       headers: headers ?? this.headers ?? const {},
+      responseType: responseType ?? this.responseType,
       isMultipart: isMultipart ?? this.isMultipart,
       urlParams: urlParams ?? this.urlParams,
       queries: queries ?? this.queries,

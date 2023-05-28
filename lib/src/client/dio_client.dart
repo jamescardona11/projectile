@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:dio/dio.dart' hide Headers;
 import 'package:projectile/src/core/client/i_projectile_client.dart';
@@ -24,7 +23,7 @@ class DioClient extends IProjectileClient {
 
   @override
   Future<ProjectileResult> createRequest(ProjectileRequest request) async {
-    final dataToRequest = request.isMultipart ? await _createFromMap(request) : _refactorFromMap(request);
+    final dataToRequest = request.isMultipart ? await _createFromMap(request) : request.body;
 
     try {
       final response = await dioClient.request(
@@ -55,7 +54,6 @@ class DioClient extends IProjectileClient {
         error: err,
         stackTrace: stackTrace,
         statusCode: 100,
-        // headers: response.headers,
       );
     }
   }
@@ -88,6 +86,9 @@ class DioClient extends IProjectileClient {
   }
 
   @override
+  bool get isHttpClient => false;
+
+  @override
   void finallyBlock() {
     dioClient.close();
   }
@@ -95,6 +96,7 @@ class DioClient extends IProjectileClient {
   Options getOptions(ProjectileRequest request) => Options(
         method: request.methodStr,
         headers: request.headers ?? {},
+        responseType: _fromResponseType(request),
       );
 
   Future<FormData> _createFromMap(ProjectileRequest request) async {
@@ -107,12 +109,10 @@ class DioClient extends IProjectileClient {
     );
   }
 
-  dynamic _refactorFromMap(ProjectileRequest request) async {
-    if ((request.headers![contentTypeKeyOne] as String?)?.toLowerCase() == applicationKey ||
-        (request.headers![contentTypeKeyTwo] as String?)?.toLowerCase() == applicationKey) {
-      return jsonEncode(request.body);
-    }
+  ResponseType? _fromResponseType(ProjectileRequest request) {
+    if (request.responseType?.isJson ?? false) return ResponseType.json;
+    if (request.responseType?.isBytes ?? false) return ResponseType.bytes;
 
-    return request.body;
+    return null;
   }
 }

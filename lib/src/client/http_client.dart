@@ -36,16 +36,15 @@ class HttpClient extends IProjectileClient {
 
       dynamic data;
 
-      final json = jsonDecode(response.body);
-      if (response.body.isNotEmpty && json != null) {
-        /// json
-        data = json;
-      } else if (response.bodyBytes.isNotEmpty) {
-        /// bytes
-        data = response.bodyBytes;
-      } else {
-        data = response.body;
-      }
+      try {
+        data = jsonDecode(response.body);
+      } catch (e) {}
+
+      /// bytes
+      data ??= response.bodyBytes;
+
+      /// other
+      data ??= response.body;
 
       if (isSuccessRequest(response.statusCode) && request.customSuccess(data)) {
         return ProjectileResult.success(
@@ -104,17 +103,18 @@ class HttpClient extends IProjectileClient {
   }
 
   @override
+  bool get isHttpClient => true;
+
+  @override
   void finallyBlock() {
     _httpClient.close();
   }
 
   http.Request _transformProjectileRequest(ProjectileRequest request) {
-    // final uri = request.getUri(config.baseUrl);
     final uri = Uri.parse(request.target);
 
-    final httpRequest = http.Request(request.methodStr, uri)
-      ..headers.addAll(_asMap(request.headers ?? {}))
-      ..bodyFields = request.body.map((key, value) => MapEntry(key, value.toString()));
+    final httpRequest = http.Request(request.methodStr, uri)..headers.addAll(_asMap(request.headers ?? {}));
+    httpRequest.body = jsonEncode(request.body);
 
     return httpRequest;
   }
@@ -122,7 +122,6 @@ class HttpClient extends IProjectileClient {
   Future<http.MultipartRequest> _transformProjectileMultipartRequest(
     ProjectileRequest request,
   ) async {
-    // final uri = request.getUri(config.baseUrl);
     final uri = Uri.parse(request.target);
 
     final httpRequest = http.MultipartRequest(request.methodStr, uri)
