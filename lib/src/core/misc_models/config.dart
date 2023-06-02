@@ -41,4 +41,3 @@ class BaseConfig {
 
 const contentTypeKeyOne = 'content-type';
 const contentTypeKeyTwo = 'Content-Type';
-const applicationKey = 'application/json';

@@ -74,6 +74,8 @@ class ProjectileResult {
 
   String? get dataString => data is String ? data as String : null;
 
+  String? get errorString => error is String ? data as String : error.toString();
+
   bool get isSuccessRequest =>
       statusCode != null &&
       ![

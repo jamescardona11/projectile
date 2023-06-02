@@ -95,7 +95,7 @@ class DioClient extends IProjectileClient {
 
   Options getOptions(ProjectileRequest request) => Options(
         method: request.methodStr,
-        headers: request.headers ?? {},
+        headers: request.headers,
         responseType: _fromResponseType(request),
       );
 

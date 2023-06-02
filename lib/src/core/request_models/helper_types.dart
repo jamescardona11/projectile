@@ -9,6 +9,9 @@ enum ContentType {
   final String _value;
 
   String get value => _value;
+
+  @override
+  String toString() => value;
 }
 
 // based in DIO
@@ -23,4 +26,10 @@ enum PResponseType {
   bool get isJson => this == json;
 
   bool get isBytes => this == bytes;
+}
+
+abstract class HeadersKeys {
+  static const accept = 'Accept';
+  static const authorization = 'Authorization';
+  static const contentType = 'Content-Type';
 }

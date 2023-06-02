@@ -70,7 +70,9 @@ abstract class IProjectileClient extends IClient<ProjectileResult> with RunInter
   }
 
   Map<String, dynamic> _getHeaders(BaseConfig config, {Map<String, dynamic>? requestHeaders, ContentType? contentType}) {
-    final Map<String, dynamic> headers = Map.from(requestHeaders ?? config.baseHeaders ?? {});
+    final Map<String, dynamic> headers = Map.from(
+      requestHeaders?.map((key, value) => MapEntry(key, value.toString())) ?? config.baseHeaders ?? {},
+    );
     if (headers.containsKey(contentTypeKeyOne) || headers.containsKey(contentTypeKeyTwo)) headers;
 
     if (contentType != null) {
