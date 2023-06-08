@@ -37,7 +37,7 @@ class HttpClient extends IProjectileClient {
       dynamic data;
 
       try {
-        data = jsonDecode(response.body);
+        data = json.decode(utf8.decode(response.bodyBytes));
       } catch (e) {}
 
       /// bytes
