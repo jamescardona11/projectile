@@ -38,8 +38,8 @@ class ProjectileRequest {
     this.urlParams = const {},
     this.queries = const {},
     this.body = const {},
-    this.customSuccess = _defaultCustomSuccess,
-  });
+    ValueGetterRequest? customSuccess,
+  }) : customSuccess = customSuccess ?? _defaultCustomSuccess;
 
   String get methodStr => isMultipart ? Method.POST.value : method.value;
 
@@ -50,9 +50,11 @@ class ProjectileRequest {
 
     final uri = Uri.parse(_addDynamicAddressParams(tempUrl));
 
-    if (queries.isNotEmpty) {}
+    if (queries.isNotEmpty) {
+      uri.replace(queryParameters: queries);
+    }
 
-    return uri.replace(queryParameters: queries);
+    return uri;
   }
 
   String getUrl([String baseUrl = '']) {
