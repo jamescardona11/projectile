@@ -2,7 +2,8 @@
 /// {@endtemplate}
 enum ContentType {
   binary('application/octet-stream'),
-  json('application/json; charset=utf-8');
+  json('application/json; charset=utf-8'),
+  onlyJson('application/json');
 
   const ContentType(this._value);
 

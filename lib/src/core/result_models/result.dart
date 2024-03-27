@@ -90,7 +90,9 @@ class ProjectileResult {
         415, // Unsupported Media Type
       ].contains(statusCode);
 
-  String get message => (error?.toString() ?? '');
+  String get errorMessage {
+    return error is List<int> ? String.fromCharCodes(error) : (error?.toString() ?? '');
+  }
 
   @override
   String toString() {
@@ -98,7 +100,7 @@ class ProjectileResult {
       return 'SuccessResult(\nstatusCode: $statusCode, data: $data, headers: ${headers.toString()}\n)';
     }
 
-    var msg = 'FailureResult [$type]: $message ';
+    var msg = 'FailureResult [$type]: $errorMessage \nstatusCode: $statusCode,';
     if (error is Error) {
       msg += '\n${(error as Error).stackTrace}';
     }

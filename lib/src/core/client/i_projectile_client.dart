@@ -49,12 +49,7 @@ abstract class IProjectileClient extends IClient<ProjectileResult> with RunInter
     ProjectileRequest request,
     Completer<ProjectileResult> completer,
   ) {
-    String finalTarget = '';
-    if (isHttpClient) {
-      finalTarget = request.getUri(_config.baseUrl).toString();
-    } else {
-      finalTarget = request.getUrl(_config.baseUrl);
-    }
+    final finalTarget = isHttpClient ? request.getUri(_config.baseUrl) : request.getUrl(_config.baseUrl);
 
     return _sendRequest(
       request.copyWith(

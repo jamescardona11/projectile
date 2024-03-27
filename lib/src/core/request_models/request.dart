@@ -43,7 +43,7 @@ class ProjectileRequest {
 
   String get methodStr => isMultipart ? Method.POST.value : method.value;
 
-  Uri getUri([String baseUrl = '']) {
+  String getUri([String baseUrl = '']) {
     final bUrl = ignoreBaseUrl ? '' : baseUrl;
 
     final tempUrl = (bUrl + target).trim();
@@ -51,10 +51,10 @@ class ProjectileRequest {
     final uri = Uri.parse(_addDynamicAddressParams(tempUrl));
 
     if (queries.isNotEmpty) {
-      uri.replace(queryParameters: queries);
+      return uri.replace(queryParameters: queries).toString();
     }
 
-    return uri;
+    return uri.toString();
   }
 
   String getUrl([String baseUrl = '']) {

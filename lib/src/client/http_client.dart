@@ -114,7 +114,9 @@ class HttpClient extends IProjectileClient {
     final uri = Uri.parse(request.target);
 
     final httpRequest = http.Request(request.methodStr, uri)..headers.addAll(_asMap(request.headers ?? {}));
-    httpRequest.body = jsonEncode(request.body);
+    if (request.body.isNotEmpty) {
+      httpRequest.body = jsonEncode(request.body);
+    }
 
     return httpRequest;
   }
